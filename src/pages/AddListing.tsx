@@ -15,6 +15,7 @@ export default function AddListing() {
   const [quantity, setQuantity] = useState("")
   const [unit, setUnit] = useState("")
   const [price, setPrice] = useState("")
+  const [pickupLocation, setPickupLocation] = useState("")
   const [imageFile, setImageFile] = useState<File | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,6 +70,7 @@ export default function AddListing() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g., Fresh Basil Leaves"
             className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-accent)] focus:outline-none transition"
             required
           />
@@ -80,6 +82,7 @@ export default function AddListing() {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            placeholder="Short description of your item..."
             className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-accent)] focus:outline-none transition"
             rows={3}
             required
@@ -94,6 +97,7 @@ export default function AddListing() {
               type="number"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Available quantity"
               className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-accent)] focus:outline-none transition"
               required
             />
@@ -106,6 +110,7 @@ export default function AddListing() {
               type="text"
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
+              placeholder="e.g., bunches, kg, packs"
               className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-accent)] focus:outline-none transition"
               required
             />
@@ -119,10 +124,25 @@ export default function AddListing() {
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            placeholder="Price per unit"
             className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-accent)] focus:outline-none transition"
             required
           />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Pickup Location
+          </label>
+          <input
+            type="text"
+            value={pickupLocation}
+            onChange={(e) => setPickupLocation(e.target.value)}
+            placeholder="e.g., 123 Garden Ln, Windsor"
+            className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:ring-2 focus:ring-[var(--color-accent)] focus:outline-none transition"
+            required
+          />
+        </div>
+
         <label className="block mb-4">
           <span className="block text-sm font-medium text-gray-700 mb-1">
             Upload Image
