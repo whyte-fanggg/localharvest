@@ -3,9 +3,11 @@
   --font-body: 'Mulish', sans-serif;
 
   --color-primary: #3A6B35;
+  --color-primary-dark: #2f572b;
   --color-secondary: #F4A300;
-  --color-accent: #7BB661;
   --color-bg: #FAF7EF;
   --color-text: #2B2B2B;
   --color-muted: #6B666B;
+  --color-accent: #63994E;
+  --color-danger: #B03A3A;
 }

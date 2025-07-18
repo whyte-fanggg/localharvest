@@ -1,21 +1,53 @@
-import { useState } from "react"
-import { db, storage } from "../lib/firebase"
-import { collection, addDoc, Timestamp } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { Navigate, useNavigate } from "react-router-dom"
-import useAuthUser from "../hooks/useAuthUser"
-import { v4 as uuid } from "uuid"
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate, Navigate } from 'react-router-dom'
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  Timestamp
+} from 'firebase/firestore'
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from 'firebase/storage'
+import { db, storage } from '../lib/firebase'
+import useAuthUser from '../hooks/useAuthUser'
+import { v4 as uuid } from 'uuid'
 
-export default function AddListing() {
-  const { isSignedIn, user, isLoaded } = useAuthUser()
+export default function EditListing() {
+  const { id } = useParams()
   const navigate = useNavigate()
+  const { isSignedIn, user, isLoaded } = useAuthUser()
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [quantity, setQuantity] = useState("")
-  const [unit, setUnit] = useState("")
-  const [price, setPrice] = useState("")
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [quantity, setQuantity] = useState('')
+  const [unit, setUnit] = useState('')
+  const [price, setPrice] = useState('')
+  const [existingImage, setExistingImage] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      if (!id) return
+      const docRef = doc(db, 'listings', id)
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        const data = docSnap.data()
+        if (data.ownerId !== user?.id) return navigate('/my-listings')
+
+        setTitle(data.title)
+        setDescription(data.description)
+        setQuantity(data.quantity)
+        setUnit(data.unit)
+        setPrice(data.price)
+        setExistingImage(data.imageUrl)
+      }
+    }
+
+    if (user?.id && id) fetchListing()
+  }, [id, user, navigate])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -24,32 +56,27 @@ export default function AddListing() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user?.id) return
+    if (!user?.id || !id) return
 
-    try {
-      let imageUrl = ""
-      if (imageFile) {
-        const imageRef = ref(storage, `listings/${user.id}/${uuid()}`)
-        await uploadBytes(imageRef, imageFile)
-        imageUrl = await getDownloadURL(imageRef)
-      }
+    let imageUrl = existingImage
 
-      await addDoc(collection(db, "listings"), {
-        ownerId: user.id,
-        title,
-        description,
-        quantity: Number(quantity),
-        unit,
-        price: Number(price),
-        imageUrl,
-        createdAt: Timestamp.now(),
-        isAvailable: true,
-      })
-
-      navigate("/my-listings")
-    } catch (err) {
-      console.error("Error creating listing:", err)
+    if (imageFile) {
+      const imageRef = ref(storage, `listings/${user.id}/${uuid()}`)
+      await uploadBytes(imageRef, imageFile)
+      imageUrl = await getDownloadURL(imageRef)
     }
+
+    await updateDoc(doc(db, 'listings', id), {
+      title,
+      description,
+      quantity: Number(quantity),
+      unit,
+      price: Number(price),
+      imageUrl,
+      updatedAt: Timestamp.now()
+    })
+
+    navigate('/my-listings')
   }
 
   if (!isLoaded) return null
@@ -57,14 +84,10 @@ export default function AddListing() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-10 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">
-        Add New Listing
-      </h1>
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Edit Listing</h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
           <input
             type="text"
             value={title}
@@ -74,9 +97,7 @@ export default function AddListing() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -87,9 +108,7 @@ export default function AddListing() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Quantity
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
             <input
               type="number"
               value={quantity}
@@ -99,9 +118,7 @@ export default function AddListing() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Unit
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
             <input
               type="text"
               value={unit}
@@ -112,9 +129,7 @@ export default function AddListing() {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Price ($)
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
           <input
             type="number"
             value={price}
@@ -123,10 +138,19 @@ export default function AddListing() {
             required
           />
         </div>
+
+        {existingImage && (
+          <div className="mb-3">
+            <img
+              src={existingImage}
+              alt="Current listing"
+              className="rounded-md max-h-48 object-cover"
+            />
+          </div>
+        )}
+
         <label className="block mb-4">
-          <span className="block text-sm font-medium text-gray-700 mb-1">
-            Upload Image
-          </span>
+          <span className="block text-sm font-medium text-gray-700 mb-1">Replace Image</span>
           <input
             type="file"
             name="imageFile"
@@ -142,11 +166,12 @@ export default function AddListing() {
               transition-all duration-200"
           />
         </label>
+
         <button
           type="submit"
           className="mt-6 w-full rounded-full bg-[var(--color-secondary)] px-6 py-3 text-sm font-bold text-white shadow hover:brightness-105 hover:scale-105 transition-all duration-200"
         >
-          🍅 Save Listing
+          ✅ Update Listing
         </button>
       </form>
     </div>

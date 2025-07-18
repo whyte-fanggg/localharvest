@@ -1,13 +1,25 @@
-import { UserButton, useUser } from '@clerk/clerk-react'
+import { UserButton, SignInButton, useUser } from "@clerk/clerk-react"
 
 export default function AuthMenu() {
-  const { isSignedIn } = useUser()
+  const { user, isLoaded } = useUser()
 
-  if (!isSignedIn) return null
+  if (!isLoaded) return null
 
-  return (
-    <div className="flex items-center gap-2">
-      <UserButton afterSignOutUrl="/" />
-    </div>
+  return user ? (
+    <UserButton
+      afterSignOutUrl="/"
+      appearance={{
+        elements: {
+          avatarBox:
+            "w-8 h-8 ring-1 ring-[var(--color-bg)] rounded-full transition",
+        },
+      }}
+    />
+  ) : (
+    <SignInButton mode="modal">
+      <button className="text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] hover:underline underline-offset-4 transition">
+        Sign In
+      </button>
+    </SignInButton>
   )
 }

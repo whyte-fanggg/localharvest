@@ -1,5 +1,13 @@
-import logo from '../assets/logo.png'
+import { Link } from "react-router-dom"
 
-export default function Logo() {
-  return <img src={logo} alt="LocalHarvest" className="h-8 w-auto" />
+export default function Logo({ className = "" }: { className?: string }) {
+  return (
+    <Link to="/" className="block">
+      <img
+        src="/logo.png" // replace with your actual logo
+        alt="LocalHarvest"
+        className={className}
+      />
+    </Link>
+  )
 }
